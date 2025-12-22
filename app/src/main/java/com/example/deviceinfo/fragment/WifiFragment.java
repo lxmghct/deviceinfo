@@ -18,6 +18,8 @@ import android.view.ViewGroup;
 import com.example.deviceinfo.R;
 import com.example.deviceinfo.pojo.WifiData;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
@@ -54,6 +56,13 @@ public class WifiFragment extends Fragment {
         ft.commit();
 
         return rootView;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        // 等待视图加载完成后再加载网络信息
+        view.post(this::loadNetworkInfo);
     }
 
     private void loadNetworkInfo() {

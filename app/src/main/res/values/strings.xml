@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">DeviceInfo</string>
     <string name="loading">Loading…</string>
-    <string name="get_network_info">获取网络信息</string>
+    <string name="get_network_info">刷新网络信息</string>
     <string name="get_location_info">获取定位信息</string>
     <string name="network_label">网络信息</string>
     <string name="location_label">位置信息</string>
