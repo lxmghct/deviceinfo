@@ -17,7 +17,7 @@ import java.util.Date;
 import java.util.List;
 
 public class ConfigListAdapter
-        extends RecyclerView.Adapter<ConfigListAdapter.VH> {
+        extends RecyclerView.Adapter<ConfigListAdapter.ViewHolder> {
 
     private final List<JSONObject> list;
     private final ConfigSelectDialog.OnConfigSelected listener;
@@ -32,7 +32,7 @@ public class ConfigListAdapter
     }
 
     @Override
-    public void onBindViewHolder(@NonNull VH h, int pos) {
+    public void onBindViewHolder(@NonNull ViewHolder h, int pos) {
         JSONObject obj = list.get(pos);
         h.itemView.setOnClickListener(v -> {
             listener.onSelected(obj);
@@ -54,16 +54,16 @@ public class ConfigListAdapter
 
     @NonNull
     @Override
-    public VH onCreateViewHolder(@NonNull ViewGroup p, int v) {
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup p, int v) {
         View view = LayoutInflater.from(p.getContext())
                 .inflate(R.layout.item_config_select, p, false);
-        return new VH(view);
+        return new ViewHolder(view);
     }
 
-    public static class VH extends RecyclerView.ViewHolder {
+    public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvName, tvTime;
 
-        VH(View v) {
+        ViewHolder(View v) {
             super(v);
             tvName = v.findViewById(R.id.tvConfigName);
             tvTime = v.findViewById(R.id.tvCreatedAt);

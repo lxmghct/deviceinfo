@@ -41,7 +41,7 @@ public class ConfigEditorFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater i, ViewGroup c, Bundle b) {
 
-        View v = i.inflate(R.layout.activity_config_editor, c, false);
+        View v = i.inflate(R.layout.fragment_config_editor, c, false);
 
         Bundle args = getArguments();
         if (args == null) {

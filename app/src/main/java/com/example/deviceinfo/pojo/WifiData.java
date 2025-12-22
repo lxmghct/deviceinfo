@@ -37,6 +37,8 @@ public class WifiData extends BaseConfig implements Serializable {
             "rssi"
     );
 
+    public static final String KEY_OF_DEFAULT_NAME = "ssid";
+
     public static WifiData fromWifiInfo(WifiInfo wifiInfo) {
         WifiData data = new WifiData();
         data.ssid = wifiInfo.getSSID();
