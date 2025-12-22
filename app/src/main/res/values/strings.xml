@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">DeviceInfo</string>
+    <string name="loading">Loading…</string>
+    <string name="get_network_info">获取网络信息</string>
+    <string name="get_location_info">获取定位信息</string>
+    <string name="network_label">网络信息</string>
+    <string name="location_label">位置信息</string>
+    <string name="export_result">导出</string>
+    <string name="key_name">Key Name</string>
+    <string name="original_value">当前值</string>
+    <string name="update_value">修改值</string>
+    <string name="save_original">保存当前值</string>
+    <string name="save_updated">保存修改值</string>
+    <string name="load_updated">导入修改值</string>
+</resources>
