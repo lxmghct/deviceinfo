@@ -1,5 +1,6 @@
 [versions]
 agp = "8.9.1"
+api = "82"
 flexbox = "3.0.0"
 gson = "2.10.1"
 junit = "4.13.2"
@@ -10,6 +11,7 @@ material = "1.12.0"
 playServicesLocation = "21.3.0"
 
 [libraries]
+api = { module = "de.robv.android.xposed:api", version.ref = "api" }
 flexbox = { module = "com.google.android.flexbox:flexbox", version.ref = "flexbox" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
