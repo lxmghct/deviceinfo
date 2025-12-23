@@ -14,5 +14,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
+        <Button
+            android:id="@+id/btnOpenMap"
+            style="@style/ButtonStyle"
+            android:text="@string/open_map" />
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

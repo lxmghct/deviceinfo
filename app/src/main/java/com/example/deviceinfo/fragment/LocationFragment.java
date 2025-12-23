@@ -51,6 +51,10 @@ public class LocationFragment extends Fragment {
         ft.replace(R.id.location_fragment_container, locationConfigFragment, LOCATION_FRAGMENT_TAG);
         ft.commit();
 
+        rootView.findViewById(R.id.btnOpenMap).setOnClickListener(v -> {
+            UiUtils.toast(context, "功能开发中，敬请期待！");
+        });
+
         return rootView;
     }
 

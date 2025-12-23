@@ -6,8 +6,4 @@
     android:orientation="vertical"
     android:padding="20dp">
 
-    <Button
-        android:id="@+id/btn_export_txt"
-        style="@style/ButtonStyle"
-        android:text="@string/export_result" />
 </LinearLayout>

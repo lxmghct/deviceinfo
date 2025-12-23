@@ -20,4 +20,5 @@
     <string name="apply_updated">保存并应用修改</string>
     <string name="refresh">刷新</string>
     <string name="get_current_config">获取当前配置</string>
+    <string name="open_map">打开地图</string>
 </resources>
