@@ -1,6 +1,7 @@
 package com.example.deviceinfo.fragment.config_editor;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.example.deviceinfo.fragment.config_editor.model.BaseConfig;
 
@@ -8,7 +9,6 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileWriter;
-import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
@@ -65,29 +65,46 @@ public class ConfigStorage {
         fw.close();
     }
 
-    public static List<JSONObject> loadConfigList(Context c, Class<?> cls) throws Exception {
+    public static List<JSONObject> loadConfigList(Context c, Class<?> cls) {
         List<JSONObject> list = new ArrayList<>();
         File dir = getConfigDir(c, cls);
         for (File f : dir.listFiles()) {
-            String json = new String(Files.readAllBytes(f.toPath()));
-            list.add(new JSONObject(json));
+            JSONObject obj = readJSONObject(f);
+            if (obj != null) {
+                list.add(obj);
+            }
         }
         return list;
     }
 
-    public static String getDefaultConfigName(BaseConfig obj, String key) {
+    public static BaseConfig loadConfig(Context c, Class<? extends BaseConfig> cls, String id) {
+        File dir = getConfigDir(c, cls);
+        File file = new File(dir, id + ".json");
+        if (!file.exists()) {
+            return null;
+        }
+        JSONObject obj = readJSONObject(file);
+        if (obj != null) {
+            try {
+                return BaseConfig.fromJsonObject(obj, cls);
+            } catch (Exception e) {
+                Log.e("ConfigStorage", "loadConfig: ", e);
+            }
+        }
+        return null;
+    }
+
+    private static JSONObject readJSONObject(File f) {
         try {
-            Field f = obj.getClass().getDeclaredField(key);
-            f.setAccessible(true);
-            Object v = f.get(obj);
-            return v == null ? "config" : String.valueOf(v);
+            String json = new String(Files.readAllBytes(f.toPath()));
+            return new JSONObject(json);
         } catch (Exception e) {
-            return "config";
+            Log.e("ConfigStorage", "readJSONObject: ", e);
+            return null;
         }
     }
 
     public static boolean configNameExists(Context c, Class<?> cls, String configName) {
-
         try {
             List<JSONObject> list = ConfigStorage.loadConfigList(c, cls);
             for (JSONObject obj : list) {
@@ -95,7 +112,8 @@ public class ConfigStorage {
                     return true;
                 }
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
         return false;
     }
@@ -125,7 +143,7 @@ public class ConfigStorage {
 
     private static String generateId() {
         // 使用时间戳 + 随机数生成唯一ID
-        int randomPart = (int)(Math.random() * 100000);
+        int randomPart = (int) (Math.random() * 100000);
         return System.currentTimeMillis() + "-" + randomPart;
     }
 }

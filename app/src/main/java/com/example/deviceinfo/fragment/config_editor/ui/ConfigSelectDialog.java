@@ -33,8 +33,7 @@ public class ConfigSelectDialog extends Dialog {
 
         try {
             List<JSONObject> list = ConfigStorage.loadConfigList(ctx, cls);
-            Log.d("ConfigSelectDialog",
-                    "Loaded " + list.size() + " configs of type " + cls.getSimpleName());
+            Log.d("ConfigSelectDialog", "Loaded " + list.size() + " configs of type " + cls.getSimpleName());
             rv.setAdapter(new ConfigListAdapter(list, cls, listener, this));
         } catch (Exception ignored) {
         }
