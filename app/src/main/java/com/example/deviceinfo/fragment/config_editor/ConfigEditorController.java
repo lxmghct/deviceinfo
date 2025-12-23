@@ -15,8 +15,6 @@ import com.example.deviceinfo.fragment.config_editor.model.BaseConfig;
 import com.example.deviceinfo.fragment.config_editor.ui.ConfigSelectDialog;
 import com.example.deviceinfo.util.UiUtils;
 
-import java.util.List;
-
 public class ConfigEditorController {
 
     private final Context context;
@@ -25,21 +23,16 @@ public class ConfigEditorController {
     private boolean fromFile = false;
     private final String defaultNameKey;
 
-    public ConfigEditorController(
-            Context c,
-            View rootView,
-            BaseConfig config,
-            List<String> keys,
-            String defaultKey) {
+    public ConfigEditorController(Context c, View rootView, BaseConfig config) {
 
         this.context = c;
         this.current = config;
-        this.defaultNameKey = defaultKey;
+        this.defaultNameKey = config.getKeyOfDefaultName();
 
         RecyclerView rv = rootView.findViewById(R.id.recyclerView);
         rv.setLayoutManager(new LinearLayoutManager(c));
 
-        adapter = new ReflectAdapter(config, keys);
+        adapter = new ReflectAdapter(config);
         rv.setAdapter(adapter);
 
         rootView.findViewById(R.id.btnSaveOriginal)

@@ -12,26 +12,16 @@ import com.example.deviceinfo.R;
 import com.example.deviceinfo.fragment.config_editor.ConfigEditorController;
 import com.example.deviceinfo.fragment.config_editor.model.BaseConfig;
 
-import java.util.ArrayList;
-import java.util.List;
 
 public class ConfigEditorFragment extends Fragment {
 
     private static final String ARG_CONFIG = "config";
-    private static final String ARG_KEYS = "keys";
-    private static final String ARG_DEFAULT_KEY = "default_key";
 
     private ConfigEditorController controller;
 
-    public static ConfigEditorFragment newInstance(
-            BaseConfig config,
-            List<String> keys,
-            String defaultNameKey) {
-
+    public static ConfigEditorFragment newInstance(BaseConfig config) {
         Bundle b = new Bundle();
         b.putSerializable(ARG_CONFIG, config);
-        b.putStringArrayList(ARG_KEYS, new ArrayList<>(keys));
-        b.putString(ARG_DEFAULT_KEY, defaultNameKey);
 
         ConfigEditorFragment f = new ConfigEditorFragment();
         f.setArguments(b);
@@ -47,13 +37,11 @@ public class ConfigEditorFragment extends Fragment {
         if (args == null) {
             throw new IllegalStateException("Arguments cannot be null");
         }
-        controller = new ConfigEditorController(
-                requireContext(),
-                v,
-                (BaseConfig) args.getSerializable(ARG_CONFIG),
-                args.getStringArrayList(ARG_KEYS),
-                args.getString(ARG_DEFAULT_KEY)
-        );
+        BaseConfig config = (BaseConfig) args.getSerializable(ARG_CONFIG);
+        if (config == null) {
+            throw new IllegalStateException("Config cannot be null");
+        }
+        controller = new ConfigEditorController(requireContext(), v, config);
 
         return v;
     }

@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.deviceinfo.R;
 import com.example.deviceinfo.fragment.config_editor.model.BaseConfig;
+import com.example.deviceinfo.fragment.config_editor.model.BaseConfig.ConfigItem;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
@@ -22,15 +23,15 @@ import java.util.Map;
 public class ReflectAdapter extends RecyclerView.Adapter<ReflectAdapter.ViewHolder> {
 
     private BaseConfig targetObject;
-    private final List<String> keys;
+    private final List<ConfigItem> keyDescriptions;
     private final Map<String, Object> modifiedValues = new HashMap<>();
 
     // 保存 ViewHolder，便于批量 UI 更新
     private final Map<String, ViewHolder> holderMap = new HashMap<>();
 
-    public ReflectAdapter(BaseConfig targetObject, List<String> keys) {
+    public ReflectAdapter(BaseConfig targetObject) {
         this.targetObject = targetObject;
-        this.keys = keys;
+        this.keyDescriptions = targetObject.getConfigItems();
     }
 
     @NonNull
@@ -43,8 +44,15 @@ public class ReflectAdapter extends RecyclerView.Adapter<ReflectAdapter.ViewHold
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        String key = keys.get(position);
+        ConfigItem item = keyDescriptions.get(position);
+        String key = item.key;
         holder.tvKey.setText(key);
+        holder.tvKeyDescription.setText(item.description);
+        if (item.description != null && !item.description.isEmpty()) {
+            holder.tvKeyDescription.setVisibility(View.VISIBLE);
+        } else {
+            holder.tvKeyDescription.setVisibility(View.GONE);
+        }
         holderMap.put(key, holder);
 
         try {
@@ -87,7 +95,7 @@ public class ReflectAdapter extends RecyclerView.Adapter<ReflectAdapter.ViewHold
 
     @Override
     public int getItemCount() {
-        return keys == null ? 0 : keys.size();
+        return keyDescriptions.size();
     }
 
     public BaseConfig applyModifiedValues() {
@@ -121,7 +129,8 @@ public class ReflectAdapter extends RecyclerView.Adapter<ReflectAdapter.ViewHold
     public void updateTargetObject(BaseConfig newTarget) {
         this.targetObject = newTarget;
 
-        for (String key : keys) {
+        for (ConfigItem item : keyDescriptions) {
+            String key = item.key;
             ViewHolder holder = holderMap.get(key);
             if (holder == null) continue;
 
@@ -143,7 +152,8 @@ public class ReflectAdapter extends RecyclerView.Adapter<ReflectAdapter.ViewHold
     public void updateModifiedValues(BaseConfig config) {
         modifiedValues.clear();
 
-        for (String key : keys) {
+        for (ConfigItem item : keyDescriptions) {
+            String key = item.key;
             try {
                 Field field =
                         config.getClass().getDeclaredField(key);
@@ -162,8 +172,8 @@ public class ReflectAdapter extends RecyclerView.Adapter<ReflectAdapter.ViewHold
 
     public void clearModifiedValues() {
         modifiedValues.clear();
-        for (String key : keys) {
-            ViewHolder holder = holderMap.get(key);
+        for (ConfigItem item : keyDescriptions) {
+            ViewHolder holder = holderMap.get(item.key);
             if (holder != null) {
                 holder.etModifiedValue.setText("");
             }
@@ -179,12 +189,14 @@ public class ReflectAdapter extends RecyclerView.Adapter<ReflectAdapter.ViewHold
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvKey;
+        TextView tvKeyDescription;
         TextView tvOriginalValue;
         EditText etModifiedValue;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
             tvKey = itemView.findViewById(R.id.tvKey);
+            tvKeyDescription = itemView.findViewById(R.id.tvKeyDescription);
             tvOriginalValue = itemView.findViewById(R.id.tvOriginalValue);
             etModifiedValue = itemView.findViewById(R.id.etModifiedValue);
         }

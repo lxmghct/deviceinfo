@@ -6,12 +6,17 @@ import org.json.JSONObject;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.List;
 
 public abstract class BaseConfig implements Serializable {
     public String configId;
     public String configName;
     public long createdAt;
     public long updatedAt;
+
+    public abstract List<ConfigItem> getConfigItems();
+
+    public abstract String getKeyOfDefaultName();
 
     public JSONObject toJsonObject() throws JSONException, IllegalAccessException {
         JSONObject root = new JSONObject();
@@ -50,5 +55,15 @@ public abstract class BaseConfig implements Serializable {
             }
         }
         return config;
+    }
+
+    public static class ConfigItem implements Serializable {
+        public String key;
+        public String description;
+
+        public ConfigItem(String key, String description) {
+            this.key = key;
+            this.description = description;
+        }
     }
 }

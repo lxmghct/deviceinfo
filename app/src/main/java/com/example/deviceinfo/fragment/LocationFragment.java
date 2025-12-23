@@ -32,7 +32,7 @@ public class LocationFragment extends Fragment {
         buildLocationManager(locationManager, context);
 
         FragmentTransaction ft = getParentFragmentManager().beginTransaction();
-        locationConfigFragment = ConfigEditorFragment.newInstance(new LocationData(), LocationData.keys, LocationData.KEY_OF_DEFAULT_NAME);
+        locationConfigFragment = ConfigEditorFragment.newInstance(new LocationData());
         ft.replace(R.id.location_fragment_container, locationConfigFragment, LOCATION_FRAGMENT_TAG);
         ft.commit();
 

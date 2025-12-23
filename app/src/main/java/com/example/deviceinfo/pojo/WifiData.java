@@ -10,6 +10,11 @@ import java.util.List;
 
 public class WifiData extends BaseConfig implements Serializable {
 
+    /** 网络状态，来自 android.net.NetworkInfo.getType()
+     * 1: WIFI, 0: MOBILE, -1: 无网络(getType返回的是 null)
+     */
+    public Integer networkType;
+
     /** Wi-Fi 名称（仅展示用，不参与强校验） */
     public String ssid;
 
@@ -28,19 +33,31 @@ public class WifiData extends BaseConfig implements Serializable {
     /** 信号强度，例如-30、-90 */
     public Integer rssi;
 
-    public static List<String> keys = List.of(
-            "ssid",
-            "bssid",
-            "securityType",
-            "frequency",
-            "wifiStandard",
-            "rssi"
+    public static List<ConfigItem> keyDescriptions = List.of(
+            new ConfigItem("networkType", "网络类型: 1: WIFI, 0: MOBILE, -1: 无网络"),
+            new ConfigItem("ssid", "Wi-Fi 名称 (SSID)"),
+            new ConfigItem("bssid", "AP 的 MAC 地址 (BSSID)"),
+            new ConfigItem("securityType", "加密类型"),
+            new ConfigItem("frequency", "频率 (MHz)"),
+            new ConfigItem("wifiStandard", "Wi-Fi 标准"),
+            new ConfigItem("rssi", "信号强度 (RSSI)")
     );
 
     public static final String KEY_OF_DEFAULT_NAME = "ssid";
 
-    public static WifiData fromWifiInfo(WifiInfo wifiInfo) {
+    @Override
+    public List<ConfigItem> getConfigItems() {
+        return keyDescriptions;
+    }
+
+    @Override
+    public String getKeyOfDefaultName() {
+        return KEY_OF_DEFAULT_NAME;
+    }
+
+    public static WifiData fromWifiInfo(WifiInfo wifiInfo, int networkType) {
         WifiData data = new WifiData();
+        data.networkType = networkType;
         data.ssid = wifiInfo.getSSID();
         // wifi info 返回的 ssid 有时会带引号，需要去掉
         if (data.ssid != null && data.ssid.length() >= 2 &&
