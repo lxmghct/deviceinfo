@@ -12,12 +12,13 @@ import java.io.FileWriter;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 public class ConfigStorage {
 
     private static final String ROOT_DIR = "configs";
-
+    private static final String CURRENT_CONFIG_FILE = "current_config.json";
 
     private static final Set<Character> illegalChars = Set.of('\\', '/', ':', '*', '?', '\"', '<', '>', '|', '\'');
 
@@ -58,13 +59,6 @@ public class ConfigStorage {
         createConfigFile(c, cls, configId, obj);
     }
 
-    private static void createConfigFile(Context c, Class<?> cls, String id, JSONObject obj) throws Exception {
-        File file = new File(getConfigDir(c, cls), id + ".json");
-        FileWriter fw = new FileWriter(file);
-        fw.write(obj.toString(2));
-        fw.close();
-    }
-
     public static List<JSONObject> loadConfigList(Context c, Class<?> cls) {
         List<JSONObject> list = new ArrayList<>();
         File dir = getConfigDir(c, cls);
@@ -80,9 +74,6 @@ public class ConfigStorage {
     public static BaseConfig loadConfig(Context c, Class<? extends BaseConfig> cls, String id) {
         File dir = getConfigDir(c, cls);
         File file = new File(dir, id + ".json");
-        if (!file.exists()) {
-            return null;
-        }
         JSONObject obj = readJSONObject(file);
         if (obj != null) {
             try {
@@ -92,16 +83,6 @@ public class ConfigStorage {
             }
         }
         return null;
-    }
-
-    private static JSONObject readJSONObject(File f) {
-        try {
-            String json = new String(Files.readAllBytes(f.toPath()));
-            return new JSONObject(json);
-        } catch (Exception e) {
-            Log.e("ConfigStorage", "readJSONObject: ", e);
-            return null;
-        }
     }
 
     public static boolean configNameExists(Context c, Class<?> cls, String configName) {
@@ -141,9 +122,71 @@ public class ConfigStorage {
         return null;
     }
 
+    public static void applyCurrentConfig(Context c, Class<?> cls, String configId) throws Exception {
+        File rootDir = new File(c.getFilesDir(), ROOT_DIR);
+        if (!rootDir.exists()) rootDir.mkdirs();
+        File file = new File(rootDir, CURRENT_CONFIG_FILE);
+        JSONObject root = readJSONObject(file);
+        if (root == null) {
+            root = new JSONObject();
+        }
+
+        String key = cls.getSimpleName();
+
+        root.put(key, Objects.requireNonNullElse(configId, JSONObject.NULL));
+
+        FileWriter fw = new FileWriter(file);
+        fw.write(root.toString(2));
+        fw.close();
+    }
+
+    public static <T extends BaseConfig> T getCurrentConfig(Context c, Class<T> cls) throws Exception {
+        File file = new File(c.getFilesDir(), ROOT_DIR + "/" + CURRENT_CONFIG_FILE);
+        JSONObject root = readJSONObject(file);
+        if (root == null) {
+            return null;
+        }
+        String key = cls.getSimpleName();
+        if (!root.has(key) || root.isNull(key)) {
+            return null;
+        }
+
+        String configId = root.getString(key);
+        File configFile = new File(getConfigDir(c, cls), configId + ".json");
+        JSONObject obj = readJSONObject(configFile);
+        if (obj == null) {
+            return null;
+        }
+
+        return BaseConfig.fromJsonObject(obj, cls);
+    }
+
+
+
+    private static void createConfigFile(Context c, Class<?> cls, String id, JSONObject obj) throws Exception {
+        File file = new File(getConfigDir(c, cls), id + ".json");
+        FileWriter fw = new FileWriter(file);
+        fw.write(obj.toString(2));
+        fw.close();
+    }
+
     private static String generateId() {
         // 使用时间戳 + 随机数生成唯一ID
         int randomPart = (int) (Math.random() * 100000);
         return System.currentTimeMillis() + "-" + randomPart;
+    }
+
+
+    private static JSONObject readJSONObject(File f) {
+        if (!f.exists()) {
+            return null;
+        }
+        try {
+            String json = new String(Files.readAllBytes(f.toPath()));
+            return new JSONObject(json);
+        } catch (Exception e) {
+            Log.e("ConfigStorage", "readJSONObject: ", e);
+            return null;
+        }
     }
 }

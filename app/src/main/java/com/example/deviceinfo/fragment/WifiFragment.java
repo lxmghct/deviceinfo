@@ -52,6 +52,7 @@ public class WifiFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         // 等待视图加载完成后再加载网络信息
         view.post(this::loadNetworkInfo);
+        view.post(wifiConfigFragment::getCurrentConfig);
     }
 
     private void loadNetworkInfo() {

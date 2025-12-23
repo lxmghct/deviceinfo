@@ -23,10 +23,13 @@ public class ConfigSelectDialog extends Dialog {
         void onSelected(JSONObject config);
     }
 
-    public ConfigSelectDialog(@NonNull Context ctx, Class<?> cls, OnConfigSelected listener) {
+    private final Runnable onClose;
+
+    public ConfigSelectDialog(@NonNull Context ctx, Class<?> cls, OnConfigSelected listener, Runnable onClose) {
 
         super(ctx);
         setContentView(R.layout.dialog_config_select);
+        this.onClose = onClose;
 
         RecyclerView rv = findViewById(R.id.rvConfigs);
         rv.setLayoutManager(new LinearLayoutManager(ctx));
@@ -43,6 +46,14 @@ public class ConfigSelectDialog extends Dialog {
     protected void onStart() {
         super.onStart();
         setDialogWidth();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (onClose != null) {
+            onClose.run();
+        }
     }
 
     private void setDialogWidth() {

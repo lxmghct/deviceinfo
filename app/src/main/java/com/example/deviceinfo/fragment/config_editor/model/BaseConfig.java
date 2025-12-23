@@ -68,6 +68,15 @@ public abstract class BaseConfig implements Serializable {
         }
     }
 
+    public static BaseConfig newInstance(Class<? extends BaseConfig> cls) {
+        try {
+            return cls.newInstance();
+        } catch (Exception e) {
+            Log.e("BaseConfig", "Failed to create new instance", e);
+            return null;
+        }
+    }
+
     public JSONObject toJsonObject() throws JSONException {
         JSONObject root = new JSONObject();
         root.put("configId", configId);

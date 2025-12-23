@@ -41,6 +41,11 @@
             android:id="@+id/btnApplyChange"
             style="@style/ButtonStyle"
             android:text="@string/apply_updated"/>
+
+        <Button
+            android:id="@+id/btnGetCurrentConfig"
+            style="@style/ButtonStyle"
+            android:text="@string/get_current_config"/>
     </com.google.android.flexbox.FlexboxLayout>
 
     <!-- 表头 -->

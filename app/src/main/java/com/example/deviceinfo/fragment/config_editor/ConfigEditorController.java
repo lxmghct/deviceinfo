@@ -19,10 +19,12 @@ public class ConfigEditorController {
 
     private final Context context;
     private final ConfigTableAdapter adapter;
+    private final View rootView;
 
     public ConfigEditorController(Context c, View rootView, BaseConfig config, Runnable refreshCallback) {
 
         this.context = c;
+        this.rootView = rootView;
 
         RecyclerView rv = rootView.findViewById(R.id.recyclerView);
         rv.setLayoutManager(new LinearLayoutManager(c));
@@ -48,6 +50,12 @@ public class ConfigEditorController {
                         refreshCallback.run();
                     }
                 });
+
+        rootView.findViewById(R.id.btnApplyChange)
+                .setOnClickListener(v -> applyCurrentConfig());
+
+        rootView.findViewById(R.id.btnGetCurrentConfig)
+                .setOnClickListener(v -> getCurrentConfig());
     }
 
     public void setTargetConfig(BaseConfig config) {
@@ -55,7 +63,7 @@ public class ConfigEditorController {
     }
 
     private void showImportDialog() {
-        Class<? extends BaseConfig> cls = adapter.getTargetObject().getClass();
+        Class<? extends BaseConfig> cls = adapter.getOriginalObject().getClass();
         ConfigSelectDialog dialog =
                 new ConfigSelectDialog(context, cls, config -> {
                     try {
@@ -64,12 +72,12 @@ public class ConfigEditorController {
                     } catch (Exception e) {
                         Log.e("MainActivity", "showImportDialog: ", e);
                     }
-                });
+                }, this::refreshModifiedValues);
         dialog.show();
     }
 
     private void showSaveOriginalDialog() {
-        showSaveConfigDialog(adapter.getTargetObject(), null, null);
+        showSaveConfigDialog(adapter.getOriginalObject(), null, null);
     }
 
     private void showSaveConfigDialog(BaseConfig obj, Runnable onSaved, Runnable onCanceled) {
@@ -144,22 +152,22 @@ public class ConfigEditorController {
                 .show();
     }
 
-    private void saveModifiedConfigCallback() {
-        BaseConfig originalObj = adapter.getModifiedConfig();
-        BaseConfig obj = ConfigStorage.loadConfig(context, originalObj.getClass(), originalObj.configId);
-        if (obj != null) {
-            adapter.updateTargetObject(obj);
+    private void saveModifiedConfigCallback(Runnable afterSavedCallback) {
+        adapter.applyTempNewConfig();
+        UiUtils.hideKeyboardAndClearFocus(context, rootView);
+        if (afterSavedCallback != null) {
+            afterSavedCallback.run();
         }
     }
 
-    private void onSaveModifiedClicked() {
+    private void saveModified(Runnable afterSavedCallback, Runnable onCanceled) {
         BaseConfig obj = adapter.generateTempNewConfig();
         if (obj == null) {
             UiUtils.toast(context, "无法应用修改");
             return;
         }
         if (!adapter.isModifiedConfigFromFile()) {
-            showSaveConfigDialog(obj, this::saveModifiedConfigCallback, null);
+            showSaveConfigDialog(obj, () -> saveModifiedConfigCallback(afterSavedCallback), onCanceled);
             return;
         }
         // 从文件加载的 → 先确认是否覆盖
@@ -169,17 +177,77 @@ public class ConfigEditorController {
                 .setPositiveButton("覆盖", (d, w) -> {
                     try {
                         ConfigStorage.saveConfig(context, obj, true);
+                        saveModifiedConfigCallback(afterSavedCallback);
                         UiUtils.toast(context, "配置已覆盖");
                     } catch (Exception e) {
                         UiUtils.toast(context, "保存失败");
                     }
                 })
-                .setNegativeButton("另存为", (d, w) -> showSaveConfigDialog(obj, this::saveModifiedConfigCallback, null))
+                .setNegativeButton("另存为", (d, w) -> showSaveConfigDialog(obj, () -> saveModifiedConfigCallback(afterSavedCallback), onCanceled))
                 .show();
+    }
+
+    private void onSaveModifiedClicked() {
+        if (!adapter.isModified()) {
+            UiUtils.toast(context, "暂无修改内容");
+            return;
+        }
+        saveModified(null, null);
     }
 
     private void clearModifiedValues() {
         adapter.clearModifiedValues();
+    }
+
+    private void applyCurrentConfigCallback() {
+        BaseConfig temp = adapter.getModifiedConfig();
+        if (temp == null) {
+            UiUtils.toast(context, "暂无可应用的配置");
+            return;
+        }
+        try {
+            ConfigStorage.applyCurrentConfig(context, temp.getClass(), temp.configId);
+            UiUtils.toast(context, "应用成功");
+        } catch (Exception e) {
+            UiUtils.toast(context, "应用失败");
+            Log.e("ConfigEditorController", "applyCurrentConfigCallback: ", e);
+        }
+    }
+
+    private void applyCurrentConfig() {
+        if (!adapter.isModified()) {
+            applyCurrentConfigCallback();
+            return;
+        }
+        UiUtils.enableToast(false);
+        saveModified(() -> {
+            UiUtils.enableToast(true);
+            applyCurrentConfigCallback();
+        }, () -> UiUtils.enableToast(true));
+    }
+
+    public void getCurrentConfig() {
+        try {
+            BaseConfig config = ConfigStorage.getCurrentConfig(context, adapter.getOriginalObject().getClass());
+            adapter.updateModifiedValues(config);
+        } catch (Exception e) {
+            UiUtils.toast(context, "获取失败");
+            Log.e("ConfigEditorController", "getCurrentConfig: ", e);
+        }
+    }
+
+    private void refreshModifiedValues() {
+        // 从配置选择对话框退出后，需要检查当前配置是否被修改
+        BaseConfig temp = adapter.getModifiedConfig();
+        if (temp == null) {
+            return;
+        }
+        BaseConfig obj = ConfigStorage.loadConfig(context, temp.getClass(), temp.configId);
+        if (obj == null) {
+            adapter.resetUpdatedObject(null);
+        } else {
+            adapter.resetUpdatedObject(obj.configName);
+        }
     }
 
 }

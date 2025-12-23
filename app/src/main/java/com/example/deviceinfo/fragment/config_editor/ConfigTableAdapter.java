@@ -17,20 +17,22 @@ import com.example.deviceinfo.fragment.config_editor.model.BaseConfig.ConfigItem
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class ConfigTableAdapter extends RecyclerView.Adapter<ConfigTableAdapter.ViewHolder> {
 
-    private BaseConfig targetObject;
+    private BaseConfig originalObject;
     private BaseConfig updatedObject;
+    private BaseConfig tempNewObject;
     private final List<ConfigItem> keyDescriptions;
     private final Map<String, String> modifiedValues = new HashMap<>();
 
     // 保存 ViewHolder，便于批量 UI 更新
     private final Map<String, ViewHolder> holderMap = new HashMap<>();
 
-    public ConfigTableAdapter(BaseConfig targetObject) {
-        this.targetObject = targetObject;
-        this.keyDescriptions = targetObject.getConfigItems();
+    public ConfigTableAdapter(BaseConfig originalObject) {
+        this.originalObject = originalObject;
+        this.keyDescriptions = originalObject.getConfigItems();
     }
 
     @NonNull
@@ -57,7 +59,7 @@ public class ConfigTableAdapter extends RecyclerView.Adapter<ConfigTableAdapter.
         holderMap.put(key, holder);
 
         // 第二列：原始值
-        Object value = targetObject.data.get(key);
+        Object value = originalObject.data.get(key);
         holder.tvOriginalValue.setText(value == null ? "" : String.valueOf(value));
 
         // 第三列：修改值
@@ -95,26 +97,36 @@ public class ConfigTableAdapter extends RecyclerView.Adapter<ConfigTableAdapter.
         if (modifiedValues.isEmpty()) {
             return null;
         }
-        BaseConfig obj = updatedObject.copy();
+        tempNewObject = updatedObject == null ? BaseConfig.newInstance(originalObject.getClass()) : updatedObject.copy();
+        if (tempNewObject == null) {
+            return null;
+        }
         for (ConfigItem item : keyDescriptions) {
             String key = item.key;
             String valueStr = modifiedValues.get(key);
             if (valueStr != null && !valueStr.isEmpty()) {
                 try {
                     Object convertedValue = convertType(item.type, valueStr);
-                    obj.data.put(key, convertedValue);
+                    tempNewObject.data.put(key, convertedValue);
                 } catch (Exception e) {
                     Log.e("ConfigTableAdapter", "generateTempNewConfig: ", e);
                 }
             } else {
-                obj.data.remove(key);
+                tempNewObject.data.remove(key);
             }
         }
-        return obj;
+        return tempNewObject;
     }
 
-    public BaseConfig getTargetObject() {
-        return targetObject;
+    public void applyTempNewConfig() {
+        if (tempNewObject != null) {
+            this.updateModifiedValues(tempNewObject);
+            tempNewObject = null;
+        }
+    }
+
+    public BaseConfig getOriginalObject() {
+        return originalObject;
     }
 
     public BaseConfig getModifiedConfig() {
@@ -125,11 +137,22 @@ public class ConfigTableAdapter extends RecyclerView.Adapter<ConfigTableAdapter.
         return updatedObject != null;
     }
 
+    public void resetUpdatedObject(String newName) {
+        if (updatedObject == null) {
+            return;
+        }
+        if (newName == null) {
+            updatedObject = null;
+        } else {
+            updatedObject.configName = newName;
+        }
+    }
+
     /**
      * 更新目标对象（原始值列）
      */
     public void updateTargetObject(BaseConfig newTarget) {
-        this.targetObject = newTarget;
+        this.originalObject = newTarget;
 
         for (ConfigItem item : keyDescriptions) {
             String key = item.key;
@@ -163,6 +186,21 @@ public class ConfigTableAdapter extends RecyclerView.Adapter<ConfigTableAdapter.
                 holder.etModifiedValue.setText("");
             }
         }
+    }
+
+    public boolean isModified() {
+        if (updatedObject == null) {
+            return !modifiedValues.isEmpty();
+        }
+        for (ConfigItem item : keyDescriptions) {
+            String modifiedValue1 = modifiedValues.get(item.key);
+            Object temp = updatedObject.data.get(item.key);
+            String modifiedValue2 = temp == null ? null : String.valueOf(temp);
+            if (!Objects.equals(modifiedValue1, modifiedValue2)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private Object convertType(Class<?> type, String value) {

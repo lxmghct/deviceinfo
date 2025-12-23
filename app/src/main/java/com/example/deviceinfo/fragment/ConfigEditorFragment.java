@@ -11,6 +11,7 @@ import com.example.deviceinfo.R;
 
 import com.example.deviceinfo.fragment.config_editor.ConfigEditorController;
 import com.example.deviceinfo.fragment.config_editor.model.BaseConfig;
+import com.example.deviceinfo.util.UiUtils;
 
 
 public class ConfigEditorFragment extends Fragment {
@@ -37,6 +38,11 @@ public class ConfigEditorFragment extends Fragment {
 
         View v = i.inflate(R.layout.fragment_config_editor, c, false);
 
+        // 添加全局点击事件：点击后关闭键盘并移除焦点
+        v.setOnClickListener(view -> {
+            UiUtils.hideKeyboardAndClearFocus(requireContext(), view);
+        });
+
         Bundle args = getArguments();
         if (args == null) {
             throw new IllegalStateException("Arguments cannot be null");
@@ -53,6 +59,12 @@ public class ConfigEditorFragment extends Fragment {
     public void setTargetConfig(BaseConfig config) {
         if (controller != null) {
             controller.setTargetConfig(config);
+        }
+    }
+
+    public void getCurrentConfig() {
+        if (controller != null) {
+            controller.getCurrentConfig();
         }
     }
 }
