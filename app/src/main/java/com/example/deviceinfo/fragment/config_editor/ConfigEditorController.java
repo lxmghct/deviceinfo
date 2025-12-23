@@ -229,7 +229,9 @@ public class ConfigEditorController {
     public void getCurrentConfig() {
         try {
             BaseConfig config = ConfigStorage.getCurrentConfig(context, adapter.getOriginalObject().getClass());
-            adapter.updateModifiedValues(config);
+            if (config != null) {
+                adapter.updateModifiedValues(config);
+            }
         } catch (Exception e) {
             UiUtils.toast(context, "获取失败");
             Log.e("ConfigEditorController", "getCurrentConfig: ", e);
