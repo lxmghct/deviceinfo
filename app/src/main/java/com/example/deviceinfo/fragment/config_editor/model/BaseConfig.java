@@ -48,6 +48,9 @@ public abstract class BaseConfig implements Serializable {
 
     public String getDefaultConfigName() {
         String key = getKeyOfDefaultName();
+        if (key == null || key.isEmpty()) {
+            return null;
+        }
         Object value = data.get(key);
         return value == null ? "" : String.valueOf(value);
     }
