@@ -2,6 +2,7 @@ package com.example.deviceinfo.fragment.config_editor.ui;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -20,10 +21,7 @@ public class ConfigSelectDialog extends Dialog {
         void onSelected(JSONObject config);
     }
 
-    public ConfigSelectDialog(
-            @NonNull Context ctx,
-            Class<?> cls,
-            OnConfigSelected listener) {
+    public ConfigSelectDialog(@NonNull Context ctx, Class<?> cls, OnConfigSelected listener) {
 
         super(ctx);
         setContentView(R.layout.dialog_config_select);
@@ -32,8 +30,9 @@ public class ConfigSelectDialog extends Dialog {
         rv.setLayoutManager(new LinearLayoutManager(ctx));
 
         try {
-            List<JSONObject> list =
-                    ConfigStorage.loadConfigList(ctx, cls);
+            List<JSONObject> list = ConfigStorage.loadConfigList(ctx, cls);
+            Log.d("ConfigSelectDialog",
+                    "Loaded " + list.size() + " configs of type " + cls.getSimpleName());
             rv.setAdapter(new ConfigListAdapter(list, listener, this));
         } catch (Exception ignored) {
         }

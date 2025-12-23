@@ -1,6 +1,7 @@
 package com.example.deviceinfo.fragment.config_editor;
 
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,14 +21,14 @@ import java.util.Map;
 
 public class ReflectAdapter extends RecyclerView.Adapter<ReflectAdapter.ViewHolder> {
 
-    private Object targetObject;
+    private BaseConfig targetObject;
     private final List<String> keys;
     private final Map<String, Object> modifiedValues = new HashMap<>();
 
     // 保存 ViewHolder，便于批量 UI 更新
     private final Map<String, ViewHolder> holderMap = new HashMap<>();
 
-    public ReflectAdapter(Object targetObject, List<String> keys) {
+    public ReflectAdapter(BaseConfig targetObject, List<String> keys) {
         this.targetObject = targetObject;
         this.keys = keys;
     }
@@ -89,15 +90,29 @@ public class ReflectAdapter extends RecyclerView.Adapter<ReflectAdapter.ViewHold
         return keys == null ? 0 : keys.size();
     }
 
-    public void applyModifiedValues() {
+    public BaseConfig applyModifiedValues() {
+        if (modifiedValues.isEmpty()) {
+            return null;
+        }
+        BaseConfig obj;
+        try {
+            obj = targetObject.getClass().newInstance();
+        } catch (Exception e) {
+            Log.e("ReflectAdapter", "无法创建配置对象", e);
+            return null;
+        }
         for (Map.Entry<String, Object> e : modifiedValues.entrySet()) {
             try {
-                Field field = targetObject.getClass().getDeclaredField(e.getKey());
+                Field field = obj.getClass().getDeclaredField(e.getKey());
                 field.setAccessible(true);
-                field.set(targetObject, e.getValue());
+                field.set(obj, e.getValue());
             } catch (Exception ignored) {
             }
         }
+        obj.configId = targetObject.configId;
+        obj.configName = targetObject.configName;
+        obj.createdAt = targetObject.createdAt;
+        return obj;
     }
 
     /**
@@ -120,8 +135,6 @@ public class ReflectAdapter extends RecyclerView.Adapter<ReflectAdapter.ViewHold
             } catch (Exception ignored) {
             }
         }
-
-//        notifyDataSetChanged();
     }
 
     /**
@@ -145,8 +158,16 @@ public class ReflectAdapter extends RecyclerView.Adapter<ReflectAdapter.ViewHold
                 }
             } catch (Exception ignored) {}
         }
+    }
 
-//        notifyDataSetChanged();
+    public void clearModifiedValues() {
+        modifiedValues.clear();
+        for (String key : keys) {
+            ViewHolder holder = holderMap.get(key);
+            if (holder != null) {
+                holder.etModifiedValue.setText("");
+            }
+        }
     }
 
     private Object convertType(Class<?> type, String value) {

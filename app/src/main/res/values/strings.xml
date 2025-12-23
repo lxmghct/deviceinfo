@@ -11,5 +11,6 @@
     <string name="update_value">修改值</string>
     <string name="save_original">保存当前值</string>
     <string name="save_updated">保存修改值</string>
-    <string name="load_updated">导入修改值</string>
+    <string name="load_updated">导入</string>
+    <string name="clear_updated">清空</string>
 </resources>

@@ -14,7 +14,6 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.UUID;
 
 public class ConfigStorage {
 
@@ -27,8 +26,11 @@ public class ConfigStorage {
     }
 
     public static void saveConfig(Context c, BaseConfig obj, boolean overwrite) throws Exception {
+        if (obj.configName == null || obj.configName.isEmpty()) {
+            throw new IllegalArgumentException("Config name cannot be empty");
+        }
         if (!overwrite || obj.configId == null) {
-            obj.configId = UUID.randomUUID().toString();
+            obj.configId = generateId();
             obj.createdAt = System.currentTimeMillis();
         }
         obj.updatedAt = System.currentTimeMillis();
@@ -43,7 +45,10 @@ public class ConfigStorage {
         for (Field f : obj.getClass().getDeclaredFields()) {
             if (Modifier.isStatic(f.getModifiers())) continue;
             f.setAccessible(true);
-            data.put(f.getName(), f.get(obj));
+            Object val = f.get(obj);
+            if (val != null) {
+                data.put(f.getName(), val);
+            }
         }
         root.put("data", data);
 
@@ -80,5 +85,36 @@ public class ConfigStorage {
             f.set(obj, data.get(key));
         }
         return obj;
+    }
+
+    public static String getDefaultConfigName(BaseConfig obj, String key) {
+        try {
+            Field f = obj.getClass().getDeclaredField(key);
+            f.setAccessible(true);
+            Object v = f.get(obj);
+            return v == null ? "config" : String.valueOf(v);
+        } catch (Exception e) {
+            return "config";
+        }
+    }
+
+    public static boolean configNameExists(Context c, Class<?> cls, String configName) {
+
+        try {
+            List<JSONObject> list = ConfigStorage.loadConfigList(c, cls);
+            for (JSONObject obj : list) {
+                if (configName.equals(obj.getString("configName"))) {
+                    return true;
+                }
+            }
+        } catch (Exception ignored) {}
+
+        return false;
+    }
+
+    private static String generateId() {
+        // 使用时间戳 + 随机数生成唯一ID
+        int randomPart = (int)(Math.random() * 100000);
+        return System.currentTimeMillis() + "-" + randomPart;
     }
 }

@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
     <!-- 顶部按钮区 -->
-    <LinearLayout
+    <com.google.android.flexbox.FlexboxLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="8dp">
+        app:flexWrap="wrap"
+        app:justifyContent="flex_start">
 
         <Button
             android:id="@+id/btnSaveOriginal"
@@ -25,7 +26,12 @@
             android:id="@+id/btnImport"
             style="@style/ButtonStyle"
             android:text="@string/load_updated"/>
-    </LinearLayout>
+
+        <Button
+            android:id="@+id/btnClear"
+            style="@style/ButtonStyle"
+            android:text="@string/clear_updated"/>
+    </com.google.android.flexbox.FlexboxLayout>
 
     <!-- 表头 -->
     <LinearLayout

@@ -13,8 +13,10 @@ import com.example.deviceinfo.R;
 
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class ConfigListAdapter
         extends RecyclerView.Adapter<ConfigListAdapter.ViewHolder> {
@@ -41,7 +43,10 @@ public class ConfigListAdapter
 
         try {
             h.tvName.setText(obj.getString("configName"));
-            String timeString = "创建时间：" + new Date(obj.getLong("createdAt"));
+            // 格式: 创建时间：YYYY-MM-DD HH:MM:SS
+            Date date = new Date(obj.getLong("createdAt"));
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+            String timeString = "创建时间：" + sdf.format(date);
             h.tvTime.setText(timeString);
         } catch (Exception ignored) {
         }
