@@ -23,7 +23,7 @@ public class ConfigEditorController {
     private boolean fromFile = false;
     private final String defaultNameKey;
 
-    public ConfigEditorController(Context c, View rootView, BaseConfig config) {
+    public ConfigEditorController(Context c, View rootView, BaseConfig config, Runnable refreshCallback) {
 
         this.context = c;
         this.current = config;
@@ -46,6 +46,13 @@ public class ConfigEditorController {
 
         rootView.findViewById(R.id.btnClear)
                 .setOnClickListener(v -> clearModifiedValues());
+
+        rootView.findViewById(R.id.btnRefresh)
+                .setOnClickListener(v -> {
+                    if (refreshCallback != null) {
+                        refreshCallback.run();
+                    }
+                });
     }
 
     public void setTargetConfig(BaseConfig config) {

@@ -32,11 +32,10 @@ public class LocationFragment extends Fragment {
         buildLocationManager(locationManager, context);
 
         FragmentTransaction ft = getParentFragmentManager().beginTransaction();
-        locationConfigFragment = ConfigEditorFragment.newInstance(new LocationData());
+        locationConfigFragment = ConfigEditorFragment.newInstance(new LocationData(), this::loadLocationInfo);
         ft.replace(R.id.location_fragment_container, locationConfigFragment, LOCATION_FRAGMENT_TAG);
         ft.commit();
 
-        rootView.findViewById(R.id.btn_get_location_info).setOnClickListener(v -> loadLocationInfo());
         return rootView;
     }
 

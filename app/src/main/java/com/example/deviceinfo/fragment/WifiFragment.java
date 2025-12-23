@@ -27,7 +27,6 @@ public class WifiFragment extends Fragment {
 
     public final String WIFI_FRAGMENT_TAG = "wifi_fragment";
 
-
     private ConfigEditorFragment wifiConfigFragment = null;
 
     @Override
@@ -40,10 +39,8 @@ public class WifiFragment extends Fragment {
         wifiManager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
 
-        rootView.findViewById(R.id.btn_get_network_info).setOnClickListener(v -> loadNetworkInfo());
-
         FragmentTransaction ft = getParentFragmentManager().beginTransaction();
-        wifiConfigFragment = ConfigEditorFragment.newInstance(new WifiData());
+        wifiConfigFragment = ConfigEditorFragment.newInstance(new WifiData(), this::loadNetworkInfo);
         ft.replace(R.id.wifi_fragment_container, wifiConfigFragment, WIFI_FRAGMENT_TAG);
         ft.commit();
 

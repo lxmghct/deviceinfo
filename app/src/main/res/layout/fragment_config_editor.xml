@@ -31,6 +31,16 @@
             android:id="@+id/btnClear"
             style="@style/ButtonStyle"
             android:text="@string/clear_updated"/>
+
+        <Button
+            android:id="@+id/btnRefresh"
+            style="@style/ButtonStyle"
+            android:text="@string/refresh"/>
+        
+        <Button
+            android:id="@+id/btnApplyChange"
+            style="@style/ButtonStyle"
+            android:text="@string/apply_updated"/>
     </com.google.android.flexbox.FlexboxLayout>
 
     <!-- 表头 -->

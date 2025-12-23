@@ -9,21 +9,6 @@
         android:orientation="vertical"
         android:padding="10dp">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <TextView
-                style="@style/TextLabel"
-                android:text="@string/location_label" />
-
-            <Button
-                android:id="@+id/btn_get_location_info"
-                style="@style/ButtonStyle"
-                android:text="@string/get_location_info" />
-        </LinearLayout>
-
         <androidx.fragment.app.FragmentContainerView
             android:id="@+id/location_fragment_container"
             android:layout_width="match_parent"

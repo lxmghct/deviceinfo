@@ -17,4 +17,6 @@
     <string name="btn_delete">删除</string>
     <string name="btn_confirm">确认</string>
     <string name="btn_cancel">取消</string>
+    <string name="apply_updated">应用修改</string>
+    <string name="refresh">刷新</string>
 </resources>

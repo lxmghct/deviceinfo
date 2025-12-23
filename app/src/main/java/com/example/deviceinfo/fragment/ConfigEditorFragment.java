@@ -19,12 +19,16 @@ public class ConfigEditorFragment extends Fragment {
 
     private ConfigEditorController controller;
 
-    public static ConfigEditorFragment newInstance(BaseConfig config) {
+    private static Runnable refreshCallback = null;
+
+    public static ConfigEditorFragment newInstance(BaseConfig config, Runnable refreshCallback) {
         Bundle b = new Bundle();
         b.putSerializable(ARG_CONFIG, config);
 
         ConfigEditorFragment f = new ConfigEditorFragment();
         f.setArguments(b);
+
+        ConfigEditorFragment.refreshCallback = refreshCallback;
         return f;
     }
 
@@ -41,7 +45,7 @@ public class ConfigEditorFragment extends Fragment {
         if (config == null) {
             throw new IllegalStateException("Config cannot be null");
         }
-        controller = new ConfigEditorController(requireContext(), v, config);
+        controller = new ConfigEditorController(requireContext(), v, config, refreshCallback);
 
         return v;
     }
