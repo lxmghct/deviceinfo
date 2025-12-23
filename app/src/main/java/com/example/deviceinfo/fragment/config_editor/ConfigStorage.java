@@ -9,15 +9,17 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.FileWriter;
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 public class ConfigStorage {
 
     private static final String ROOT_DIR = "configs";
+
+
+    private static final Set<Character> illegalChars = Set.of('\\', '/', ':', '*', '?', '\"', '<', '>', '|', '\'');
 
     public static File getConfigDir(Context c, Class<?> cls) {
         File dir = new File(c.getFilesDir(), ROOT_DIR + "/" + cls.getSimpleName());
@@ -35,26 +37,31 @@ public class ConfigStorage {
         }
         obj.updatedAt = System.currentTimeMillis();
 
-        JSONObject root = new JSONObject();
-        root.put("configId", obj.configId);
-        root.put("configName", obj.configName);
-        root.put("createdAt", obj.createdAt);
-        root.put("updatedAt", obj.updatedAt);
+        JSONObject root = obj.toJsonObject();
+        createConfigFile(c, obj.getClass(), obj.configId, root);
+    }
 
-        JSONObject data = new JSONObject();
-        for (Field f : obj.getClass().getDeclaredFields()) {
-            if (Modifier.isStatic(f.getModifiers())) continue;
-            f.setAccessible(true);
-            Object val = f.get(obj);
-            if (val != null) {
-                data.put(f.getName(), val);
-            }
+    public static void saveConfig(Context c, Class<?> cls, JSONObject obj, boolean overwrite) throws Exception {
+        String configId = obj.getString("configId");
+        String configName = obj.getString("configName");
+        long now = System.currentTimeMillis();
+
+        if (configName.isEmpty()) {
+            throw new IllegalArgumentException("Config name cannot be empty");
         }
-        root.put("data", data);
+        if (!overwrite || configId.isEmpty()) {
+            configId = generateId();
+            obj.put("configId", configId);
+            obj.put("createdAt", now);
+        }
+        obj.put("updatedAt", System.currentTimeMillis());
+        createConfigFile(c, cls, configId, obj);
+    }
 
-        File file = new File(getConfigDir(c, obj.getClass()), obj.configId + ".json");
+    private static void createConfigFile(Context c, Class<?> cls, String id, JSONObject obj) throws Exception {
+        File file = new File(getConfigDir(c, cls), id + ".json");
         FileWriter fw = new FileWriter(file);
-        fw.write(root.toString(2));
+        fw.write(obj.toString(2));
         fw.close();
     }
 
@@ -66,25 +73,6 @@ public class ConfigStorage {
             list.add(new JSONObject(json));
         }
         return list;
-    }
-
-    public static <T extends BaseConfig> T loadConfig(
-            JSONObject json, Class<T> cls) throws Exception {
-
-        T obj = cls.newInstance();
-        obj.configId = json.getString("configId");
-        obj.configName = json.getString("configName");
-        obj.createdAt = json.getLong("createdAt");
-        obj.updatedAt = json.getLong("updatedAt");
-
-        JSONObject data = json.getJSONObject("data");
-        for (Iterator<String> it = data.keys(); it.hasNext(); ) {
-            String key = it.next();
-            Field f = cls.getDeclaredField(key);
-            f.setAccessible(true);
-            f.set(obj, data.get(key));
-        }
-        return obj;
     }
 
     public static String getDefaultConfigName(BaseConfig obj, String key) {
@@ -110,6 +98,29 @@ public class ConfigStorage {
         } catch (Exception ignored) {}
 
         return false;
+    }
+
+    public static void deleteConfig(Context c, Class<?> cls, String id) {
+        File dir = getConfigDir(c, cls);
+        File file = new File(dir, id + ".json");
+        if (file.exists()) {
+            file.delete();
+        }
+    }
+
+    public static String checkFileName(String name) {
+        if (name == null || name.isEmpty()) {
+            return "配置名称不能为空";
+        }
+        for (char c : name.toCharArray()) {
+            if (illegalChars.contains(c)) {
+                return "配置名称包含非法字符";
+            }
+        }
+        if (name.length() > 100) {
+            return "配置名称过长";
+        }
+        return null;
     }
 
     private static String generateId() {

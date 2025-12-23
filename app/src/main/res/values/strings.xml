@@ -13,4 +13,8 @@
     <string name="save_updated">保存修改值</string>
     <string name="load_updated">导入</string>
     <string name="clear_updated">清空</string>
+    <string name="btn_edit">编辑</string>
+    <string name="btn_delete">删除</string>
+    <string name="btn_confirm">确认</string>
+    <string name="btn_cancel">取消</string>
 </resources>

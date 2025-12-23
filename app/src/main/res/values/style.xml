@@ -37,4 +37,10 @@
         <item name="android:textStyle">bold</item>
     </style>
 
+    <style name="ImageButton">
+        <item name="android:layout_width">25dp</item>
+        <item name="android:layout_height">25dp</item>
+        <item name="android:scaleType">fitCenter</item>
+    </style>
+
 </resources>

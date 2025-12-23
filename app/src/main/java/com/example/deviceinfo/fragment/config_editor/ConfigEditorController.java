@@ -6,7 +6,6 @@ import android.content.Context;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -14,9 +13,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.deviceinfo.R;
 import com.example.deviceinfo.fragment.config_editor.model.BaseConfig;
 import com.example.deviceinfo.fragment.config_editor.ui.ConfigSelectDialog;
+import com.example.deviceinfo.util.UiUtils;
 
 import java.util.List;
-import java.util.Set;
 
 public class ConfigEditorController {
 
@@ -25,8 +24,6 @@ public class ConfigEditorController {
     private final ReflectAdapter adapter;
     private boolean fromFile = false;
     private final String defaultNameKey;
-
-    private final Set<Character> illegalChars = Set.of('\\', '/', ':', '*', '?', '\"', '<', '>', '|', '\'');
 
     public ConfigEditorController(
             Context c,
@@ -67,7 +64,7 @@ public class ConfigEditorController {
         ConfigSelectDialog dialog =
                 new ConfigSelectDialog(context, current.getClass(), config -> {
                     try {
-                        BaseConfig obj = ConfigStorage.loadConfig(config, current.getClass());
+                        BaseConfig obj = BaseConfig.fromJsonObject(config, current.getClass());
                         adapter.updateModifiedValues(obj);
                         fromFile = true;
                     } catch (Exception e) {
@@ -90,9 +87,9 @@ public class ConfigEditorController {
                 .setView(et)
                 .setPositiveButton("保存", (d, w) -> {
                     String name = et.getText().toString().trim();
-                    String err = checkFileName(name);
+                    String err = ConfigStorage.checkFileName(name);
                     if (err != null) {
-                        toast(err);
+                        UiUtils.toast(context, err);
                         return;
                     }
                     if (ConfigStorage.configNameExists(context, obj.getClass(), name)) {
@@ -113,9 +110,9 @@ public class ConfigEditorController {
             if (obj == current) {
                 fromFile = true;
             }
-            toast("配置已保存");
+            UiUtils.toast(context, "配置已保存");
         } catch (Exception e) {
-            toast("保存失败");
+            UiUtils.toast(context, "保存失败");
             Log.e("ConfigEditorController", "saveOriginalInternal: ", e);
         }
     }
@@ -132,7 +129,7 @@ public class ConfigEditorController {
     private void onSaveModifiedClicked() {
         BaseConfig obj = adapter.applyModifiedValues();
         if (obj == null) {
-            toast("无法应用修改");
+            UiUtils.toast(context, "无法应用修改");
             return;
         }
         if (!fromFile) {
@@ -147,9 +144,9 @@ public class ConfigEditorController {
                     try {
                         ConfigStorage.saveConfig(context, obj, true);
                         fromFile = true;
-                        toast("配置已覆盖");
+                        UiUtils.toast(context, "配置已覆盖");
                     } catch (Exception e) {
-                        toast("保存失败");
+                        UiUtils.toast(context, "保存失败");
                     }
                 })
                 .setNegativeButton("另存为", (d, w) -> showSaveOriginalDialog(obj))
@@ -161,22 +158,4 @@ public class ConfigEditorController {
         fromFile = false;
     }
 
-    private void toast(String s) {
-        Toast.makeText(context, s, Toast.LENGTH_SHORT).show();
-    }
-
-    private String checkFileName(String name) {
-        if (name == null || name.isEmpty()) {
-            return "配置名称不能为空";
-        }
-        for (char c : name.toCharArray()) {
-            if (illegalChars.contains(c)) {
-                return "配置名称包含非法字符";
-            }
-        }
-        if (name.length() > 100) {
-            return "配置名称过长";
-        }
-        return null;
-    }
 }

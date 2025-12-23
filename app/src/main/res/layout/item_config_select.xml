@@ -1,21 +1,81 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:padding="12dp"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="12dp">
 
-    <TextView
-        android:id="@+id/tvConfigName"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+    <LinearLayout
+        android:id="@+id/layoutText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/tvCreatedAt"
-        android:textSize="12sp"
-        android:textColor="#666"
+        <TextView
+            android:id="@+id/tvConfigName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <!-- 名称编辑 -->
+        <EditText
+            android:id="@+id/etConfigName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:importantForAutofill="no"
+            android:inputType="text"
+            android:singleLine="true"
+            android:visibility="gone"
+            tools:ignore="LabelFor" />
+
+        <TextView
+            android:id="@+id/tvCreatedAt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#666"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+
+    <LinearLayout
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <!-- 编辑 -->
+        <ImageButton
+            android:id="@+id/btnEdit"
+            style="@style/ImageButton"
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/btn_edit"
+            android:src="@android:drawable/ic_menu_edit" />
+
+        <!-- 删除 -->
+        <ImageButton
+            android:id="@+id/btnDelete"
+            style="@style/ImageButton"
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/btn_delete"
+            android:src="@android:drawable/ic_menu_delete" />
+
+        <!-- 确认 -->
+        <ImageButton
+            android:id="@+id/btnConfirm"
+            style="@style/ImageButton"
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/btn_confirm"
+            android:src="@android:drawable/ic_menu_save"
+            android:visibility="gone" />
+
+        <!-- 取消 -->
+        <ImageButton
+            android:id="@+id/btnCancel"
+            style="@style/ImageButton"
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/btn_cancel"
+            android:src="@android:drawable/ic_menu_close_clear_cancel"
+            android:visibility="gone" />
+    </LinearLayout>
 </LinearLayout>
