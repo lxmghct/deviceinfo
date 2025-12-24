@@ -3,6 +3,8 @@ package com.example.deviceinfo.fragment.config_editor;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.os.Build;
+import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
@@ -11,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.deviceinfo.R;
+import com.example.deviceinfo.content_provider.ProviderConstants;
 import com.example.deviceinfo.fragment.config_editor.model.BaseConfig;
 import com.example.deviceinfo.fragment.config_editor.ui.ConfigSelectDialog;
 import com.example.deviceinfo.util.UiUtils;
@@ -48,6 +51,18 @@ public class ConfigEditorController {
                 .setOnClickListener(v -> {
                     if (refreshCallback != null) {
                         refreshCallback.run();
+                    }
+                    // 测试ContentProvider调用返回的配置
+                    Bundle extras = new Bundle();
+                    extras.putString(ProviderConstants.EXTRA_CLASS_NAME, "WifiData");
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        Bundle data = context.getContentResolver().call(
+                                "com.example.deviceinfo.configprovider",
+                                "get_current_config",
+                                null,
+                                extras
+                        );
+                        Log.d("ConfigEditorController", "ContentProvider returned: " + data);
                     }
                 });
 

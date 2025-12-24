@@ -10,7 +10,6 @@ import androidx.core.app.ActivityCompat;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.deviceinfo.adapter.MainPagerAdapter;
-import com.example.deviceinfo.fragment.config_editor.ConfigStorage;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
@@ -42,8 +41,6 @@ public class MainActivity extends AppCompatActivity {
         new TabLayoutMediator(tabLayout, viewPager,
                 (tab, position) -> tab.setText(TAB_TITLES[position])
         ).attach();
-
-        ConfigStorage.syncSharedPreferences(this);
     }
 
     private void requestPermissionsIfNeeded() {

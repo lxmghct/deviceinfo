@@ -1,12 +1,9 @@
 package com.example.deviceinfo.fragment.config_editor;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.util.Log;
 
 import com.example.deviceinfo.fragment.config_editor.model.BaseConfig;
-import com.example.deviceinfo.pojo.*;
-import com.example.deviceinfo.util.UiUtils;
 
 import org.json.JSONObject;
 
@@ -142,8 +139,6 @@ public class ConfigStorage {
         FileWriter fw = new FileWriter(file);
         fw.write(root.toString(2));
         fw.close();
-
-        saveConfigToSharedPreferences(c, cls, configId);
     }
 
     public static <T extends BaseConfig> T getCurrentConfig(Context c, Class<T> cls) throws Exception {
@@ -166,31 +161,6 @@ public class ConfigStorage {
 
         return BaseConfig.fromJsonObject(obj, cls);
     }
-
-    public static void syncSharedPreferences(Context context) {
-        File file = new File(context.getFilesDir(), ROOT_DIR + "/" + CURRENT_CONFIG_FILE);
-        JSONObject root = readJSONObject(file);
-        if (root == null) {
-            return;
-        }
-        UiUtils.enableToast(false);
-        boolean flag = false;
-        for (Iterator<String> it = root.keys(); it.hasNext(); ) {
-            String key = it.next();
-            String configId = root.optString(key, null);
-            if (key.equals("WifiData")) {
-                flag = saveConfigToSharedPreferences(context, WifiData.class, configId);
-            } else if (key.equals("LocationData")) {
-                flag = saveConfigToSharedPreferences(context, LocationData.class, configId);
-            }
-        }
-        UiUtils.enableToast(true);
-        if (!flag) {
-            UiUtils.toast(context, "Xposed 模块未启用，配置无法生效");
-        }
-    }
-
-
 
     private static void createConfigFile(Context c, Class<?> cls, String id, JSONObject obj) throws Exception {
         File file = new File(getConfigDir(c, cls), id + ".json");
@@ -217,50 +187,6 @@ public class ConfigStorage {
             Log.e("ConfigStorage", "readJSONObject: ", e);
             return null;
         }
-    }
-
-    private static boolean saveConfigToSharedPreferences(Context context, Class<? extends BaseConfig> cls, String configId) {
-        String prefName = cls.getSimpleName();
-        SharedPreferences sharedPreferences;
-        try {
-            sharedPreferences = context.getSharedPreferences(prefName, Context.MODE_WORLD_READABLE);
-        } catch (SecurityException ignored) {
-            // The new XSharedPreferences is not enabled or module's not loading
-            Log.w("ConfigStorage", "saveConfigToSharedPreferences: Unable to access SharedPreferences " + prefName);
-            UiUtils.toast(context, "Xposed 模块未启用，配置无法生效");
-            return false;
-        }
-        BaseConfig config = loadConfig(context, cls, configId);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        if (config != null) {
-            editor.putString("configId", config.configId);
-            editor.putString("configName", config.configName);
-            editor.putLong("createdAt", config.createdAt);
-            editor.putLong("updatedAt", config.updatedAt);
-            for (String key : config.data.keySet()) {
-                Object value = config.data.get(key);
-                if (value instanceof String) {
-                    editor.putString(key, (String) value);
-                } else if (value instanceof Integer) {
-                    editor.putInt(key, (Integer) value);
-                } else if (value instanceof Boolean) {
-                    editor.putBoolean(key, (Boolean) value);
-                } else if (value instanceof Long) {
-                    editor.putLong(key, (Long) value);
-                } else if (value instanceof Float) {
-                    editor.putFloat(key, (Float) value);
-                } else if (value instanceof Double) {
-                    editor.putFloat(key, ((Double) value).floatValue());
-                }else {
-                    // Unsupported type
-                    Log.w("ConfigStorage", "Unsupported data type for key: " + key);
-                }
-            }
-        } else {
-            editor.clear();
-        }
-        editor.apply();
-        return true;
     }
 
 }
