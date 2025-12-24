@@ -95,7 +95,11 @@ public abstract class BaseConfig implements Serializable {
                 Log.w("BaseConfig", "Unknown config key: " + key);
                 continue;
             }
-            if (isTypeDifferent(type, entry.getValue().getClass())) {
+            Object value = entry.getValue();
+            if (value == null) {
+                continue;
+            }
+            if (isTypeDifferent(type, value.getClass())) {
                 Log.w("BaseConfig", "Type mismatch for key: " + key + ", expected: " + type.getName() + ", got: " + entry.getValue().getClass().getName());
                 continue;
             }
