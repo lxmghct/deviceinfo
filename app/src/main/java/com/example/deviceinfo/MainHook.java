@@ -58,7 +58,9 @@ public class MainHook implements IXposedHookLoadPackage {
                             return;
                         }
                         XposedBridge.log("Context acquired: " + providerContext);
+
                         hookNetwork(lpparam, providerContext);
+                        hookLocation(lpparam, providerContext);
                     }
                 }
         );
@@ -71,11 +73,8 @@ public class MainHook implements IXposedHookLoadPackage {
         }
         // 1. 网络类型
         int networkType = bundle.getInt("networkType", -1);
-        XposedHelpers.findAndHookMethod(
-                "android.net.NetworkInfo",
-                lpparam.classLoader,
-                "getType",
-                new XC_MethodHook() {
+        XposedHelpers.findAndHookMethod("android.net.NetworkInfo", lpparam.classLoader,
+                "getType", new XC_MethodHook() {
                     @Override
                     protected void beforeHookedMethod(MethodHookParam param) {
                         if (networkType == -1) {
@@ -87,11 +86,8 @@ public class MainHook implements IXposedHookLoadPackage {
                 });
         // TODO: NetworkInfo.getTypeName, NetworkInfo.getSubType
         if (networkType == -1) {
-            XposedHelpers.findAndHookMethod(
-                    "android.net.ConnectivityManager",
-                    lpparam.classLoader,
-                    "getNetworkCapabilities",
-                    new XC_MethodHook() {
+            XposedHelpers.findAndHookMethod("android.net.ConnectivityManager", lpparam.classLoader,
+                    "getNetworkCapabilities", new XC_MethodHook() {
                         @Override
                         protected void beforeHookedMethod(MethodHookParam param) {
                             param.setResult(null);
@@ -100,11 +96,8 @@ public class MainHook implements IXposedHookLoadPackage {
             return;
         }
         XposedHelpers.findAndHookMethod(
-                "android.net.NetworkCapabilities",
-                lpparam.classLoader,
-                "hasTransport",
-                int.class,
-                new XC_MethodHook() {
+                "android.net.NetworkCapabilities", lpparam.classLoader,
+                "hasTransport", int.class, new XC_MethodHook() {
                     @Override
                     protected void beforeHookedMethod(MethodHookParam param) {
                         int transportType = (int) param.args[0];
@@ -120,16 +113,6 @@ public class MainHook implements IXposedHookLoadPackage {
         if (networkType != ConnectivityManager.TYPE_WIFI) {
             return;
         }
-        XposedHelpers.findAndHookMethod("android.net.wifi.WifiInfo", lpparam.classLoader,
-                "getSSID", new XC_MethodHook() {
-                    @Override
-                    protected void afterHookedMethod(MethodHookParam param) {
-                        String ssid = bundle.getString("ssid", null);
-                        if (ssid != null) {
-                            param.setResult(ssid);
-                        }
-                    }
-                });
 
         XposedHelpers.findAndHookMethod("android.net.wifi.WifiInfo", lpparam.classLoader,
                 "getSSID", new XC_MethodHook() {
@@ -141,63 +124,122 @@ public class MainHook implements IXposedHookLoadPackage {
                         }
                     }
                 });
-        XposedHelpers.findAndHookMethod("android.net.wifi.WifiInfo", lpparam.classLoader,
-                "getBSSID", new XC_MethodHook() {
-                    @Override
-                    protected void afterHookedMethod(MethodHookParam param) {
-                        String bssid = bundle.getString("bssid", null);
-                        if (bssid != null) {
-                            param.setResult(bssid);
-                        }
-                    }
-                });
-        XposedHelpers.findAndHookMethod("android.net.wifi.WifiInfo", lpparam.classLoader,
-                "getFrequency", new XC_MethodHook() {
-                    @Override
-                    protected void afterHookedMethod(MethodHookParam param) {
-                        int frequency = bundle.getInt("frequency", -1);
-                        if (frequency != -1) {
-                            param.setResult(frequency);
-                        }
-                    }
-                });
-        XposedHelpers.findAndHookMethod("android.net.wifi.WifiInfo", lpparam.classLoader,
-                "getRssi", new XC_MethodHook() {
-                    @Override
-                    protected void afterHookedMethod(MethodHookParam param) {
-                        int rssi = bundle.getInt("rssi", -127);
-                        if (rssi != -127) {
-                            param.setResult(rssi);
-                        }
-                    }
-                });
+
+        hookMethodOfString(bundle, lpparam, "android.net.wifi.WifiInfo", "getBSSID", "bssid");
+
+        hookMethodOfInt(bundle, lpparam, "android.net.wifi.WifiInfo", "getFrequency", "frequency");
+
+        hookMethodOfInt(bundle, lpparam, "android.net.wifi.WifiInfo", "getRssi", "rssi");
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            XposedHelpers.findAndHookMethod("android.net.wifi.WifiInfo", lpparam.classLoader,
-                    "getCurrentSecurityType", new XC_MethodHook() {
-                        @Override
-                        protected void afterHookedMethod(MethodHookParam param) {
-                            int securityType = bundle.getInt("securityType", -1);
-                            if (securityType != -1) {
-                                param.setResult(securityType);
-                            }
-                        }
-                    });
+            hookMethodOfInt(bundle, lpparam, "android.net.wifi.WifiInfo", "getCurrentSecurityType", "securityType");
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            XposedHelpers.findAndHookMethod("android.net.wifi.WifiInfo", lpparam.classLoader,
-                    "getWifiStandard", new XC_MethodHook() {
-                        @Override
-                        protected void afterHookedMethod(MethodHookParam param) {
-                            int wifiStandard = bundle.getInt("wifiStandard", -1);
-                            if (wifiStandard != -1) {
-                                param.setResult(wifiStandard);
-                            }
-                        }
-                    });
+            hookMethodOfInt(bundle, lpparam, "android.net.wifi.WifiInfo", "getWifiStandard", "wifiStandard");
         }
 
         // TODO: Hook ScanResult
 
+    }
+
+    private void hookLocation(XC_LoadPackage.LoadPackageParam lpparam, Context context) {
+        Bundle bundle = getDataFromProvider(context, "LocationData");
+        if (bundle == null) {
+            return;
+        }
+
+        hookMethodOfDouble(bundle, lpparam, "android.location.Location", "getLatitude", "latitude");
+        hookMethodOfDouble(bundle, lpparam, "android.location.Location", "getLongitude", "longitude");
+        hookMethodOfFloat(bundle, lpparam, "android.location.Location", "getAccuracy", "horizontalAccuracy");
+        hookMethodOfDouble(bundle, lpparam, "android.location.Location", "getAltitude", "altitude");
+        hookMethodOfFloat(bundle, lpparam, "android.location.Location", "getVerticalAccuracyMeters", "verticalAccuracy");
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            hookMethodOfDouble(bundle, lpparam, "android.location.Location", "getMslAltitudeMeters", "mslAltitude");
+            hookMethodOfFloat(bundle, lpparam, "android.location.Location", "getMslAltitudeAccuracyMeters", "mslAltitudeAccuracy");
+        }
+        hookMethodOfFloat(bundle, lpparam, "android.location.Location", "getSpeed", "speed");
+        hookMethodOfFloat(bundle, lpparam, "android.location.Location", "getSpeedAccuracyMetersPerSecond", "speedAccuracy");
+        hookMethodOfFloat(bundle, lpparam, "android.location.Location", "getBearing", "bearing");
+        hookMethodOfFloat(bundle, lpparam, "android.location.Location", "getBearingAccuracyDegrees", "bearingAccuracy");
+
+        XposedHelpers.findAndHookMethod("android.location.Location", lpparam.classLoader,
+                "isFromMockProvider", new XC_MethodHook() {
+                    @Override
+                    protected void afterHookedMethod(MethodHookParam param) {
+                        if (bundle.containsKey("isMock")) {
+                            boolean isMock = bundle.getBoolean("isMock", false);
+                            param.setResult(isMock);
+                        }
+                    }
+                });
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            XposedHelpers.findAndHookMethod("android.location.Location", lpparam.classLoader,
+                    "getElapsedRealtimeMillis", new XC_MethodHook() {
+                        @Override
+                        protected void afterHookedMethod(MethodHookParam param) {
+                            if (bundle.containsKey("elapsedRealtimeMillis")) {
+                                long elapsedRealtimeMillis = bundle.getLong("elapsedRealtimeMillis", Long.MIN_VALUE);
+                                if (elapsedRealtimeMillis != Long.MIN_VALUE) {
+                                    param.setResult(elapsedRealtimeMillis);
+                                }
+                            }
+                        }
+                    });
+        }
+    }
+
+
+    private void hookMethodOfString(Bundle bundle, XC_LoadPackage.LoadPackageParam lpparam, String className, String methodName, String key) {
+        XposedHelpers.findAndHookMethod(className, lpparam.classLoader,
+                methodName, new XC_MethodHook() {
+                    @Override
+                    protected void afterHookedMethod(MethodHookParam param) {
+                        String val = bundle.getString(key, null);
+                        if (val != null) {
+                            param.setResult(val);
+                        }
+                    }
+                });
+    }
+
+
+    private void hookMethodOfInt(Bundle bundle, XC_LoadPackage.LoadPackageParam lpparam, String className, String methodName, String key) {
+        XposedHelpers.findAndHookMethod(className, lpparam.classLoader,
+                methodName, new XC_MethodHook() {
+                    @Override
+                    protected void afterHookedMethod(MethodHookParam param) {
+                        int val = bundle.getInt(key, Integer.MIN_VALUE);
+                        if (val != Integer.MIN_VALUE) {
+                            param.setResult(val);
+                        }
+                    }
+                });
+    }
+
+    private void hookMethodOfFloat(Bundle bundle, XC_LoadPackage.LoadPackageParam lpparam, String className, String methodName, String key) {
+        XposedHelpers.findAndHookMethod(className, lpparam.classLoader,
+                methodName, new XC_MethodHook() {
+                    @Override
+                    protected void afterHookedMethod(MethodHookParam param) {
+                        float val = bundle.getFloat(key, Float.NaN);
+                        if (!Float.isNaN(val)) {
+                            param.setResult(val);
+                        }
+                    }
+                });
+    }
+
+    private void hookMethodOfDouble(Bundle bundle, XC_LoadPackage.LoadPackageParam lpparam, String className, String methodName, String key) {
+        XposedHelpers.findAndHookMethod(className, lpparam.classLoader,
+                methodName, new XC_MethodHook() {
+                    @Override
+                    protected void afterHookedMethod(MethodHookParam param) {
+                        double val = bundle.getDouble(key, Double.NaN);
+                        if (!Double.isNaN(val)) {
+                            param.setResult(val);
+                        }
+                    }
+                });
     }
 }
