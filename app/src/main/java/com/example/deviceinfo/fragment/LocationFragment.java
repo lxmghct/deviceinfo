@@ -39,7 +39,7 @@ public class LocationFragment extends Fragment {
 
         locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
 
-        FragmentTransaction ft = getParentFragmentManager().beginTransaction();
+        FragmentTransaction ft = getChildFragmentManager().beginTransaction();
         locationConfigFragment = ConfigEditorFragment.newInstance(new LocationData(), this::loadLocationInfo);
         ft.replace(R.id.location_fragment_container, locationConfigFragment, LOCATION_FRAGMENT_TAG);
         ft.commit();

@@ -39,7 +39,7 @@ public class WifiFragment extends Fragment {
         wifiManager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
 
-        FragmentTransaction ft = getParentFragmentManager().beginTransaction();
+        FragmentTransaction ft = getChildFragmentManager().beginTransaction();
         wifiConfigFragment = ConfigEditorFragment.newInstance(new WifiData(), this::loadNetworkInfo);
         ft.replace(R.id.wifi_fragment_container, wifiConfigFragment, WIFI_FRAGMENT_TAG);
         ft.commit();
