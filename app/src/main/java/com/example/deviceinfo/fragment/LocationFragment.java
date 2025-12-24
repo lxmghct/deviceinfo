@@ -35,16 +35,6 @@ public class LocationFragment extends Fragment {
         context = requireContext();
 
         locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
-        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-                || ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            locationManager.requestLocationUpdates(
-                    LocationManager.GPS_PROVIDER,
-                    1000,
-                    1,
-                    location -> {
-                    }
-            );
-        }
 
         FragmentTransaction ft = getParentFragmentManager().beginTransaction();
         locationConfigFragment = ConfigEditorFragment.newInstance(new LocationData(), this::loadLocationInfo);
