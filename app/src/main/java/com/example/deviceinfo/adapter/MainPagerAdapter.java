@@ -20,11 +20,11 @@ public class MainPagerAdapter extends FragmentStateAdapter {
     public Fragment createFragment(int position) {
         switch (position) {
             case 0:
-                return new WifiFragment();
-            case 1:
-                return new LocationFragment();
-            default:
                 return new SettingsFragment();
+            case 1:
+                return new WifiFragment();
+            default:
+                return new LocationFragment();
         }
     }
 

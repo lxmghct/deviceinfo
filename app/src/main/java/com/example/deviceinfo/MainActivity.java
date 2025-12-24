@@ -10,6 +10,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.deviceinfo.adapter.MainPagerAdapter;
+import com.example.deviceinfo.fragment.config_editor.ConfigStorage;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
@@ -19,9 +20,9 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQ_PERMISSION = 1001;
 
     private final String[] TAB_TITLES = {
+            "设置",
             "网络信息",
-            "位置信息",
-            "设置"
+            "位置信息"
     };
 
 
@@ -42,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
                 (tab, position) -> tab.setText(TAB_TITLES[position])
         ).attach();
 
+        ConfigStorage.syncSharedPreferences(this);
     }
 
     private void requestPermissionsIfNeeded() {

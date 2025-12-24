@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.util.Log;
 
 import com.example.deviceinfo.fragment.config_editor.model.BaseConfig;
+import com.example.deviceinfo.pojo.*;
 import com.example.deviceinfo.util.UiUtils;
 
 import org.json.JSONObject;
@@ -13,6 +14,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -165,6 +167,29 @@ public class ConfigStorage {
         return BaseConfig.fromJsonObject(obj, cls);
     }
 
+    public static void syncSharedPreferences(Context context) {
+        File file = new File(context.getFilesDir(), ROOT_DIR + "/" + CURRENT_CONFIG_FILE);
+        JSONObject root = readJSONObject(file);
+        if (root == null) {
+            return;
+        }
+        UiUtils.enableToast(false);
+        boolean flag = false;
+        for (Iterator<String> it = root.keys(); it.hasNext(); ) {
+            String key = it.next();
+            String configId = root.optString(key, null);
+            if (key.equals("WifiData")) {
+                flag = saveConfigToSharedPreferences(context, WifiData.class, configId);
+            } else if (key.equals("LocationData")) {
+                flag = saveConfigToSharedPreferences(context, LocationData.class, configId);
+            }
+        }
+        UiUtils.enableToast(true);
+        if (!flag) {
+            UiUtils.toast(context, "Xposed 模块未启用，配置无法生效");
+        }
+    }
+
 
 
     private static void createConfigFile(Context c, Class<?> cls, String id, JSONObject obj) throws Exception {
@@ -194,7 +219,7 @@ public class ConfigStorage {
         }
     }
 
-    private static void saveConfigToSharedPreferences(Context context, Class<? extends BaseConfig> cls, String configId) {
+    private static boolean saveConfigToSharedPreferences(Context context, Class<? extends BaseConfig> cls, String configId) {
         String prefName = cls.getSimpleName();
         SharedPreferences sharedPreferences;
         try {
@@ -203,7 +228,7 @@ public class ConfigStorage {
             // The new XSharedPreferences is not enabled or module's not loading
             Log.w("ConfigStorage", "saveConfigToSharedPreferences: Unable to access SharedPreferences " + prefName);
             UiUtils.toast(context, "Xposed 模块未启用，配置无法生效");
-            return;
+            return false;
         }
         BaseConfig config = loadConfig(context, cls, configId);
         SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -235,5 +260,7 @@ public class ConfigStorage {
             editor.clear();
         }
         editor.apply();
+        return true;
     }
+
 }
