@@ -1,1 +1,5 @@
-https://developer.aliyun.com/article/1308376
+# 安卓设备信息模拟工具
+目前进度：
+- wifi模拟：完成
+- 位置模拟：进行中
+- 设备基本信息模拟：未开始
